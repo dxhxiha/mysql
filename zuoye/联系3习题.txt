@@ -1,0 +1,155 @@
+--  1、查询Student表中的所有记录的s_name、s_sex和s_class列。
+select s_name,s_sex,s_class from student;
+
+-- 2、 查询教师所有的单位即不重复的t_depart列
+select t_depart from teacher group by t_depart ;
+
+-- 3、 查询Student表的所有记录。
+select * from student;
+
+-- 4、 查询Score表中成绩在60到80之间的所有记录
+select * from score where grade  between 60 and 80;
+
+-- 5、 查询Score表中成绩为85，86和88的记录。
+select * from score where grade in (85,86,88);
+
+-- 6、 查询Student表中“95031”班或性别为“女”的同学记录。
+select * from student where s_class = 85031 or s_sex = 'w';
+
+-- 7、 以Class降序查询Student表的所有记录。
+select * from student order by s_class desc;
+
+-- 8、 以c_no升序、grade降序查询Score表的所有记录。
+select * from score order by c_no asc,grade desc;
+
+-- 9、 查询“95031”班的学生人数。
+select count(s_class) from student where s_class = '95031';
+
+-- 10、 查询Score表中的最高分的学生学号和课程号。
+select s_id,c_no from score where grade  in (select max(grade) from score);
+
+-- 11、查询Score表中除了每门课程最高分的学生学号和课程号。
+select s_id,c_no from score where (c_no,grade) not in (select c_no,max(grade) from score group by c_no);
+
+-- 12、 查询每门课的平均成绩。
+select avg(grade) from score group by c_no;
+
+-- 13、查询Score表中至少有5名学生选修的并以3开头的课程的平均分数。
+select c_no,avg(grade) from score where c_no in (select c_no from score  where c_no regexp '^[3]' group by c_no having count(c_no)>=5) group by c_no;
+
+-- 14、查询分数大于70，小于90的S_id列。
+select s_id from score where grade >70 and grade < 90;
+
+-- 15、查询所有学生的Sname、Cno和grade列。 
+select c_no,s_name,grade from score,student where student.s_id=score.s_id;
+
+-- 16、查询所有学生的S_id、C_name和grade列。
+select s_id,c_name,grade from course,score where course.c_no=score.c_no;
+
+-- 17、查询所有学生的Sname、C_name和grade列。
+select s_name,c_name,grade from course,score,student where course.c_no=score.c_no and student.s_id=score.s_id ;
+
+--18、查询选修“3-105”课程的成绩高于“109”号同学成绩的所有同学的记录。
+select * from score where grade > all (select grade from score where s_id=109 and c_no = '3-105') and c_no = '3-105';
+
+--19、查询和学号为108、101的同学同年出生的所有学生的s_id、s_name和s_brithday列。
+select s_id,s_name,s_brithday from student where year(s_brithday) = any (select year(s_brithday) from student where s_id=108 or s_id=101);
+
+--20、查询“王萍”教师任课的学生成绩。
+select grade from score where c_no = all(select c_no from course where t_id = all (select t_id from teacher where t_name='王萍'));
+
+select grade from teacher,score,course where teacher.t_id=course.t_id and score.c_no=course.c_no and t_name='王萍';
+--21、查询95033班和95031班全体学生的记录。
+select * from student where s_class in (95033,95031); 
+
+--22、查询存在有85分以上成绩的课程c_no.
+select c_no from score where grade > 85 group by c_no;
+
+--23、查询出“计算机系“教师所教课程的成绩表。
+select grade from score where c_no in (select c_no from course where t_id in (select t_id from teacher where t_depart='计算机'));
+
+select grade from teacher,score,course where teacher.t_id=course.t_id and score.c_no=course.c_no and t_depart='计算机';
+
+--24、查询所在系是“计算机”与“电子工程系“不同职称的教师的名字和职位。
+
+select t_name,t_prof from teacher where t_depart = '电子工程' or t_depart = '计算机' group by t_prof having count(t_name)=1 ;
+
+--25、查询选修编号为“3-105“课程且成绩至少高于选修编号为“3-245”的同学的课程编号、学生编号和成绩,并按成绩从高到低次序排序。
+
+select s_id,grade from score where grade > any  (select grade from score where c_no > '3-245') and c_no='3-105' order by grade desc;
+
+select * from score where c_no='3-105' and grade > any (select grade from score where c_no='3-245')order by grade desc;
+
+ 
+--26、查询选修编号为“3-105”且成绩高于选修编号为“3-245”课程的同学的课程编号，学生编号和成绩.
+
+select s_id,grade from score where grade > all  (select grade from score where c_no = '3-245') and c_no='3-105';
+
+--27、查询所有教师和同学的名字、性别和出生年月.
+
+select s_name,s_sex,s_brithday from student 
+union all
+select t_name,t_sex,t_birthday from teacher;
+
+--28、查询所有“女”教师和“女”同学的名字、性别和出生年月.
+
+select s_name,s_sex,s_brithday from student where s_sex='w' union all select t_name,t_sex,t_birthday from teacher where t_sex='w';
+
+--29、查询成绩比该课程平均成绩低的同学的成绩表。
+
+select group_concat(grade) from score where grade <= any (select avg(grade) as grade from score group by c_no) group by c_no;
+
+--30、查询Student表中每个学生的姓名和年龄。
+
+select s_name,year(now())-year(s_brithday) from  student;
+
+--31、查询最高分同学的学生编号、课程编号和成绩列。
+
+select grade,s_id,c_no from score where grade in (select max(grade) from  score );
+ 
+--32、查询所有选修“计算机导论”课程的“男”同学的成绩表。
+select grade from score where s_id in (select s_id from student where s_sex='m') and c_no in (select c_no from course where c_name='计算机导论')
+
+select grade from student,course,score where student.s_id=score.s_id and course.c_no=score.c_no and s_sex='m'and c_name='计算机导论';
+--33、查询本月过生日的学生
+
+select s_name,MONTH(s_brithday) from student where MONTH(s_brithday)=MONTH(now());
+
+select * from student where MONTH(s_brithday)=MONTH(now());
+
+--34、查询下周过生日的学生
+select * from student where week(now())+8 >week(s_brithday) and week(now()) < week(s_brithday)
+
+--35、检索至少选修两门课程的学生学号
+select s_id from score group by s_id having count(c_no) >= 2;
+
+--36、查询选修"张旭"老师所授课程的学生中，成绩最高的学生信息及其成绩
+select student.*,score.* from teacher,score,course,student where teacher.t_id=course.t_id and course.c_no=score.c_no and score.s_id=student.s_id and t_name='张旭' and grade = (select MAX(grade) from score where c_no = all(select c_no from course where t_id = all (select t_id from teacher where t_name='张旭')));
+
+select student.*,grade from score,student where score.s_id=student.s_id and (c_no,grade) in (select course.c_no,max(grade) from score,course,teacher where course.t_id=teacher.t_id and score.c_no=course.c_no and t_name='张旭');
+
+--37、查询选修了全部课程的学生信息
+ select student.* from score,student where score.s_id=student.s_id group by score.s_id having count(score.s_id)=4;
+
+
+
+--38、检索至少选修两门课程的学生学号
+
+
+--39、查询课程名称为"数字电路"，且分数不低于80的学生姓名和分数 
+
+select grade,s_name from student,course,score where student.s_id=score.s_id and course.c_no=score.c_no and c_name='数字电路'and grade > 80;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

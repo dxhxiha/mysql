@@ -46,10 +46,6 @@ mysql是一个开放源代码的数据库管理系统，他是有MySQL  AB公司
 
 
 
-
-
-
-
 数据库是有一批数据构成的有序的集合。这些数据被存放在结构化的数据表里。数据表之间互相关联，放映了客观事物间的本职联系。数据库系统提供对数据的安全控制和完整性控制。
 
 
@@ -104,7 +100,7 @@ sql-92  ANSI美国标准机构
 分为四类：
 
 ```
-数据定义语言  ：DDL（data definitionlanguage）:create（创建）、alter（修改）、drop（删除）针对数据库或表而言
+数据定义语言  ：DDL（data definition language）:create（创建）、alter（修改）、drop（删除）针对数据库或表而言
 
 数据操作语言：DML（data Manipulation language）:INSERT (写入)、updata（更新）、delete（删除）针对数据而言
 
@@ -157,7 +153,7 @@ mysql
 
 
 
-MySQL的优势：
+## MySQL的优势：
 
 ```
 1.速度快 ：相对于大型数据库来说
@@ -170,7 +166,7 @@ MySQL的优势：
 
 
 
-```
+```mysql
 #创建数据库
 create database 数据库名
 
@@ -186,10 +182,10 @@ drop Database  数据库名
 
 ```
 
-
+## 土著数据库
 
 ```
-土著数据库
+
 | information_schema |：用于保存关于mysql所维护的所有数据库的信息，包含数据库名，库中的表明，表中的字段 ，数据类型等信息
 | mysql              |:用于保存数据库中用户信息，权限、关键字等内容
 | performance_schema |：用于收集服务器性能参数，5.5版本之后才拥有的数据库
@@ -201,7 +197,7 @@ drop Database  数据库名
 ```
 存储引擎
 属于mysql底层组件，通过储存引擎支持mysql的增删改查，不同的储存引擎拥有不同的功能，属于mysql的核心
-show  engines\G
+show  engines\G   ###引擎查看
 ```
 
 
@@ -227,11 +223,11 @@ Transactions: NO			是否支持事务
 
 
 
-存储引擎
+## 存储引擎 
 
 ```
 MyISAM（不适用使用与钱有关的场景）
-1.mysql5.5版本之前的默认存储引擎（建如果不指定引擎默认使用myisam）
+1.mysql5.5版本之前的默认存储引擎（建表如果不指定引擎默认使用myisam）
 在5.5版本之后使用innodb
 2.myisam存储引擎读取速度快，占用资源少，不支持事物，不支持外键，支持全文索引
 3.读写相互阻塞
@@ -242,95 +238,200 @@ MyISAM（不适用使用与钱有关的场景）
 
 
 
-MEMORY
 
+InnoDB特点
+（1）mysql5.5版本以后默认存储引擎
+（2）支持外键、行级别锁定，支持事务，支持事务的提交、回滚和崩溃的回复，能处理大并发量数据，性能较高。
+（3）具有较高缓存性能，能缓存索引，也能缓存数据。
+（4）使用InnoDB会在数据目录下生成两个名为ib_logfile0和ib_logfile1的5m大小日志文件和一个10m大小名为ibdata1（存放了使用innoDB存储引擎的表的数据以及索引信息）的自动扩展数据文件
 
-InnoDB
+使用场景：
+（1）需啊哟支持事务的业务（例如：银行转账）
+（2）数据需要大量更新的场景。例如论坛等等
+（3）数据一致性要求较高的业务。手机卡充值
+ show variables like 'default_storage_engine';  #查看默认存储引擎
+ show variables like ''   ##查看系统参数的命令
+
+MEMORY特点
+（1）使用内存来进行保存数据，未查询和引用提供快速访问
+（2）支持hash和btree索引，不支持使用blob和text数据类型
+（3）如果不需要继续使用memory表中的数据，直接将表清空或者删除数据的方式可以直接释放内存。
+适用场景：
+临时存放数据，数据量不大，不需要较高安全性，可以选择memory，mysql使用memory相当熟存放查询的中间结果，一般用于存放session。
 
 
 ```
 
 
 
+##                              对于表的操作
 
+首先表作为存放数据的基本单位，可以包含一个或多个字段，可以用于创建、删除或者进行修改。建表的过程相当于给字段设置属性的过程，也是对数据进行约束的过程。
 
+创建表的语法
 
+```mysql
+create table 表名(
 
+字段1 数据类型   完整性约束条件
 
+字段2 数据类型   完整性约束条件
 
+)
+```
 
+```
+查看当前的库
 
+show databases；
 
+然后通过use 库名 来使用库
 
+查看当前库有哪些表
 
+show tables；
 
 
+```
 
 
 
+完整性约束条件是什么？
 
+```
+对字段进行限制，允许用户想字段中写入符合约束条件的数据，如果用户写入的数据不满足条件，则会写入失败
+```
 
+约束条件
 
+```
+primary key 表示该属性为该表的主键，用于唯一的标识数据
+foreign key 表示该属性为该表的外键，是与之联系的某表的主键
+NOT NULL  标识该表的属性不能为空
+UNIQUE    表示该属性值唯一
+default   给某个字段设置默认值
+auto_increment   标识带有概述性的字段值自动增加
+```
 
 
 
+## 主键：
 
+需要满足唯一且非空，用于唯一标识数据，可以给数据本身具有唯一特质的字段进行添加
 
+1单字段主键（表中只有一个字段设置为主键）
 
+create table test(id int primary key, name varchar(30), sex char(2) );
 
+2在定义玩所有的咧之后设置主键
 
+ create table test1(id int , name varchar(30), sex char(2), primary key(id ) );
 
+3.多字段主键（将多个字段放置在一起作为一个主键primary）
 
+primary key（字段1 字段2.....）
 
 
 
 
 
+## 外键
 
+用来建立表与表之间的联系的约束条件，通过字段建立连接，一旦建立外键会出现父子表概念，谁建立外键谁就是数据子表，被关联的另一个表被称为父表，一个外键只能有一个子表，但是父表可以有多个字表。
 
+子表与附表相关联的的字段在写入数据时，父表中链接字段拥有的数据，，才能向子表中添加，否则添加失败，为了保证数据的完整性。一个表作为被关联的字段必须作为主键，至于要设置外键的字段是不是主键对于关联产生任何影响。
 
+```mysql
+[constraint  约束名] foreign （设置外键的字段1，字段2.。。） references  父表名 (父表的字段列)
+```
 
+create table example2(id int primary key,name varchar(30),address varchar(30));
 
+create table example3(d_id int primary key,name varchar(30),brithday date,address varchar(30),constraint fk_5 foreign key(d_id) references example2(id));
 
 
 
+## 建立外键的规则：
 
+```
+建立外键时，父表的主键列数据类型需要和外键一致
+建立外键时，如果关联的父表为联合主键，需要从第一个字段开始关联
+建立外键时，关联的父表的字段一定要是父表的主键
+书写问题	
+```
 
+create
 
+## 非空字段
 
+```mysql
+表示该属性的字段不能写入非空值
 
+语法： 字段名  数据类型 not null
+```
 
 
 
+## 唯一性约束条件
 
+```mysql 
+表示设置唯一性约束条件不允许写入重复值
 
+1语法： 字段名    数据类型   unique
 
+2语法 ：[constraint   约束名]   unique  （定义唯一条件的字段）
+```
 
+```mysql
+create table example8(id int unique ,name varchar(30) not null);
 
+```
 
+查看表结构
 
+```mysql
+desc   表名
 
+  describe  表名
 
+show  create  table 表名\G           # 查看信息详细
+```
 
 
 
+## 默认值
 
+事先给某个字段设置默认值，当不想该字段写入数据时，mysql会自动将默认值填入到该字段中
 
+语法：字段名  数据类型   default 默认值
 
+```mysql
 
+create table example10(id int primary key,name varchar(30) NOT NULL unique, class char(20) default 'sjk');
 
+insert into example10(id ,name) values(1,'user1');
 
+```
 
+![1577244352739](image/mysql第一天/1577244352739.png)
 
 
 
 
 
+## 自增
 
+用于给写入的数据生成一个新的唯一id,一个表中只允许一个自增约束条件,建立自增的时候需要为字段类型为数值和带有自增条件的字段为唯一性质,否则添加失败.
 
 
 
+auto_increment
 
+语法:字段名     数据类型    auto_increment
+
+
+
+作
 
 
 
